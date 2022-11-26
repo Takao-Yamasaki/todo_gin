@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>詳細</title>
+</head>
+<body>
+  <h2>詳細</h2>
+  <form method="post" action="/update/{{.todo.ID}}">
+    <p>内容<input type="text" name="text" value="{{.todo.Text}}"></p>
+    <p>状態
+      <select name="" id="">
+        {{if eq .todo.Status "未実行"}}
+          <option value="未実行" selected>未実行</option>
+          <option value="実行中">実行中</option>
+          <option value="終了">終了</option>
+        {{else if eq .todo.Status "実行中"}}
+          <option value="未実行">未実行</option>
+          <option value="実行中" selected>実行中</option>
+          <option value="終了">終了</option>
+        {{else}}
+          <option value="未実行">未実行</option>
+          <option value="実行中">実行中</option>
+          <option value="終了" selected>終了</option>
+        {{end}}
+      </select>
+    </p>
+    <p><input type="submit" value="Send"></p>
+  </form>
+</body>
+</html>
