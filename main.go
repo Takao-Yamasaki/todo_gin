@@ -35,6 +35,31 @@ func dbCreate(text string, status string) {
 	defer db.Close()
 }
 
+func dbUpdate(id int, text string, status string) {
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
+	if err != nil {
+		panic("could not database open")
+	}
+	var todo Todo
+	db.First(&todo, id)
+	//構造体Todoを呼んでいる
+	todo.Text = text
+	todo.Status = status
+	db.Save(&todo)
+	db.Close()
+}
+
+func dbDelete(id int) {
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
+	if err != nil {
+		panic("could not database open")
+	}
+	var todo Todo
+	db.First(&todo, id)
+	db.Delete(&todo)
+	db.Close()
+}
+
 // DBの全件取得
 func dbGetAll() []Todo {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
@@ -59,31 +84,6 @@ func dbGetOne(id int) Todo {
 	db.First(&todo, id)
 	db.Close()
 	return todo
-}
-
-func dbUpdate(id int, text string, status string) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
-	var todo Todo
-	db.First(&todo, id)
-	//構造体Todoを呼んでいる
-	todo.Text = text
-	todo.Status = status
-	db.Save(&todo)
-	db.Close()
-}
-
-func dbDelete(id int) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
-	var todo Todo
-	db.First(&todo, id)
-	db.Delete(&todo)
-	db.Close()
 }
 
 func main() {
@@ -112,7 +112,7 @@ func main() {
 	})
 
 	//Detail
-	router.GET("/detail:id", func(c *gin.Context) {
+	router.GET("/detail/:id", func(c *gin.Context) {
 		n := c.Param("id")
 		// idの値をint型に変換
 		id, err := strconv.Atoi(n)
@@ -144,7 +144,7 @@ func main() {
 			panic("ERROR")
 		}
 		todo := dbGetOne(id)
-		c.HTML(200, "delete.html", gin.H{"todo:": todo})
+		c.HTML(200, "delete.html", gin.H{"todo": todo})
 	})
 
 	//Delete
