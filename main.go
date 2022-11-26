@@ -1,11 +1,15 @@
 package main
 
 import (
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
+	_ "gorm.io/driver/mysql"
+	_ "gorm.io/gorm"
 )
 
 type Todo struct {
@@ -14,75 +18,88 @@ type Todo struct {
 	Status string
 }
 
+func Env_load() {
+	// .envを読み込む
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("could not read .env file")
+	}
+}
+
+func gormConnect() *gorm.DB {
+	Env_load()
+
+	DBMS := "mysql"
+	USER := os.Getenv("MYSQL_USER")
+	PASS := os.Getenv("MYSQL_PASSWORD")
+	PROTOCOL := "tcp(127.0.0.1:3306)"
+	DBNAME := "todo"
+
+	CONNECT := USER + ":" + PASS + "@" + PROTOCOL + "/" + DBNAME + "?parseTime=true"
+	db, err := gorm.Open(DBMS, CONNECT)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
+
 // DBの初期化
 func dbInit() {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
+	db := gormConnect()
+	defer db.Close()
 	//マイグレートを実行
 	db.AutoMigrate(&Todo{})
-	defer db.Close()
 }
 
 // DBの作成
 func dbCreate(text string, status string) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
-	db.Create(&Todo{Text: text, Status: status})
+	db := gormConnect()
 	defer db.Close()
+
+	db.Create(&Todo{Text: text, Status: status})
 }
 
 func dbUpdate(id int, text string, status string) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
+	db := gormConnect()
+	defer db.Close()
+
 	var todo Todo
 	db.First(&todo, id)
 	//構造体Todoを呼んでいる
 	todo.Text = text
 	todo.Status = status
 	db.Save(&todo)
-	db.Close()
 }
 
 func dbDelete(id int) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
+	db := gormConnect()
+	defer db.Close()
+
 	var todo Todo
 	db.First(&todo, id)
 	db.Delete(&todo)
-	db.Close()
 }
 
 // DBの全件取得
 func dbGetAll() []Todo {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
+	db := gormConnect()
+	defer db.Close()
+
 	// 要素を全て取得し、新しい順に並び替え
 	var todos []Todo
 	db.Order("created_at desc").Find(&todos)
-	db.Close()
 	return todos
 }
 
 // DBの一件取得
 func dbGetOne(id int) Todo {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-	if err != nil {
-		panic("could not database open")
-	}
+	db := gormConnect()
+	defer db.Close()
+
 	var todo Todo
 	//特定のレコードを取得
 	db.First(&todo, id)
-	db.Close()
 	return todo
 }
 
