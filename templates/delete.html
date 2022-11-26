@@ -13,7 +13,7 @@
     <li>作成時期: {{.todo.CreatedAt}}</li>
   </ul>
 
-  <form action="/delete/{{.todo.ID}}" method="post">
+  <form  method="post" action="/delete/{{.todo.ID}}">
     <p><input type="submit" value="削除"></p>
     <p><a href="/">戻る</a></p>
   </form>
