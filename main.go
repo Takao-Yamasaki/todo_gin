@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -27,15 +28,17 @@ func Env_load() {
 }
 
 func gormConnect() *gorm.DB {
-	Env_load()
-
 	DBMS := "mysql"
 	USER := os.Getenv("MYSQL_USER")
 	PASS := os.Getenv("MYSQL_PASSWORD")
-	PROTOCOL := "tcp(127.0.0.1:3306)"
-	DBNAME := "todo"
+	HOST := os.Getenv("MYSQL_HOST")
+	// ローカルで起動する場合は、127.0.0.1
+	// WEBコンテナからDBコンテナを指定する場合は、DBコンテナ名を指定
+	DBNAME := os.Getenv("MYSQL_DATABASE")
 
-	CONNECT := USER + ":" + PASS + "@" + PROTOCOL + "/" + DBNAME + "?parseTime=true"
+	CONNECT := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", USER, PASS, HOST, DBNAME)
+	fmt.Println(CONNECT)
+
 	db, err := gorm.Open(DBMS, CONNECT)
 
 	if err != nil {
